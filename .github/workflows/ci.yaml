@@ -40,9 +40,9 @@ jobs:
         token: ${{ secrets.SA_TOKEN }}
         resource-group: ${{ env.ARC_RESOURCE_GROUP }}
         cluster-name: ${{ env.ARC_CLUSTER }}
-          
+    
     - run: |
-        kubectl create namespace ${{ env.NAMESPACE }} 
+        kubectl create namespace ${{ env.NAMESPACE }} --dry-run -o json | kubectl apply -f -
         
     - uses: azure/k8s-create-secret@v1
       with:
