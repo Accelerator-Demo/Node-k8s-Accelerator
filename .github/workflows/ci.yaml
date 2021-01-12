@@ -2,8 +2,31 @@ on:
   push:
     branches:
       - main
+env:
+  REGISTRY_NAME: demoarcacr
   
-jobs:      
+  ARC_RESOURCE_GROUP: demo-arc-rg
+  ARC_CLUSTER: demo-arc-cluster
+
+  IMAGE_SECRET: demo-arc-secret
+  NAMESPACE: all-hands-demo
+    
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    
+    - uses: azure/docker-login@v1
+      with:
+        login-server: ${{ env.REGISTRY_NAME }}.azurecr.io
+        username: ${{ secrets.REGISTRY_USERNAME }} 
+        password: ${{ secrets.REGISTRY_PASSWORD }}
+    
+    - run: |
+        docker build . -t ${{ env.REGISTRY_NAME }}.azurecr.io/demo-app:${{ github.sha }}
+        docker push ${{ env.REGISTRY_NAME }}.azurecr.io/demo-app:${{ github.sha }}   
+        
   deploy-to-dev:
     runs-on: ubuntu-latest
     steps:
@@ -12,13 +35,29 @@ jobs:
     - uses: azure/k8s-set-context@users/shigupt/arc-set-context
       with:
         cluster-type: 'arc'
-        creds: '${{ secrets.AZURE_CREDS }}'
-        token: '${{ secrets.SA_TOKEN }}'
-        resource-group: 'shiguptOnpremARC'
-        cluster-name: 'onpremARCClus'   
-        
+        creds: ${{ secrets.AZURE_CREDS }}
+        token: ${{ secrets.SA_TOKEN }}
+        resource-group: ${{ env.ARC_RESOURCE_GROUP }}
+        cluster-name: ${{ env.ARC_CLUSTER }}
+          
     - run: |
-        kubectl apply -f manifests/namespace.yaml
-        kubectl apply -f manifests/deployment.yaml
-        kubectl apply -f manifests/service.yaml
+        kubectl create namespace ${{ env.NAMESPACE }} 
+        
+    - uses: azure/k8s-create-secret@v1
+      with:
+        container-registry-url: ${{ env.REGISTRY_NAME }}.azurecr.io
+        container-registry-username: ${{ secrets.REGISTRY_USERNAME }}
+        container-registry-password: ${{ secrets.REGISTRY_PASSWORD }}
+        secret-name: ${{ env.IMAGE_SECRET }}
+        namespace: ${{ env.NAMESPACE }}
+    
+    - uses: azure/k8s-deploy@v1.4
+      with:
+        manifests: |
+          manifests/*.yaml
+        images: |
+          ${{ env.REGISTRY_NAME }}.azurecr.io/demo-app:${{ github.sha }}
+        imagepullsecrets: |
+          ${{ env.IMAGE_SECRET }}
+        namespace: ${{ env.NAMESPACE }}
                           
