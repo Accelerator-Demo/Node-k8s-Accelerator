@@ -37,9 +37,9 @@ jobs:
       with:
         cluster-type: 'arc'
         creds: ${{ secrets.AZURE_CREDS }}
-        token: ${{ secrets.SA_TOKEN }}
-        resource-group: ${{ env.ARC_RESOURCE_GROUP }}
         cluster-name: ${{ env.ARC_CLUSTER }}
+        resource-group: ${{ env.ARC_RESOURCE_GROUP }}
+        token: ${{ secrets.SA_TOKEN }}
     
     - run: |
         kubectl create namespace ${{ env.NAMESPACE }} --dry-run -o json | kubectl apply -f -
