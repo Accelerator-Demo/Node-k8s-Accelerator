@@ -1,15 +1,13 @@
 on:
   push:
     branches:
-      - main
+      - master
 env:
-  REGISTRY_NAME: demoarcacr
-  
-  ARC_RESOURCE_GROUP: demo-arc-rg
-  ARC_CLUSTER: demo-arc-cluster
-
-  IMAGE_SECRET: demo-arc-secret
-  NAMESPACE: all-hands-demo
+  REGISTRY_NAME: ${{ acc.REGISTRY_NAME }}
+  ARC_RESOURCE_GROUP: ${{ acc.ARC_RESOURCE_GROUP }}
+  ARC_CLUSTER: ${{ acc.ARC_CLUSTER }}
+  IMAGE_SECRET: ${{ acc.IMAGE_SECRET }}
+  NAMESPACE: ${{ acc.NAMESPACE }}
     
 jobs:
   build:
