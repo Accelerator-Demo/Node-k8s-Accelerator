@@ -1,39 +1,69 @@
 {
-    "name" : "Node js k8s accelerator",
-    "version" : "1.0.0",
+    "name": "Node js k8s accelerator",
+    "version": "1.0.0",
     "description": "An accelerator for node js application which deploys to kubernetes",
-    "Tags" : [
+    "Tags": [
         "Node",
         "K8s"
     ],
-    "inputs" : {
-        "secrets" : [
+    "inputs": {
+        "secrets": [
             {
-                "name" : "REGISTRY_USERNAME",
-                "label" : "Username for the docker registry"
+                "name": "REGISTRY_USERNAME",
+                "label": "Username for the docker registry"
             },
             {
-                "name" : "REGISTRY_PASSWORD",
-                "label" : "password for the docker registry"
+                "name": "REGISTRY_PASSWORD",
+                "label": "Password for the docker registry"
+            },
+            {
+                "name": "AZURE_CREDS",
+                "label": "Azure Credentials"
+            },
+            {
+                "name": "SA_TOKEN",
+                "label": "SA Token"
             }
         ],
-        "placeHolders" : [
+        "placeHolders": [
             {
-                "name" : "REGISTRY_NAME",
-                "label" : "Docker registry name",
-                "files" : [".github/workflows/ci.yaml"]
-            },
-            {
-                "name" : "ARC_RESOURCE_GROUP",
-                "label" : "ARC resource group",
-                "files" : [".github/workflows/ci.yaml"]                
+                "File": ".github/workflows/ci.yaml",
+                "Variables": [
+                    {
+                        "name": "REGISTRY_NAME",
+                        "label": "Docker registry name"
+                    },
+                    {
+                        "name": "ARC_RESOURCE_GROUP",
+                        "label": "ARC Resource group"
+                    },
+                    {
+                        "name": "ARC_CLUSTER",
+                        "label": "ARC cluster"
+                    },
+                    {
+                        "name": "IMAGE_SECRET",
+                        "label": "Image Secret"
+                    },
+                    {
+                        "name": "NAMESPACE",
+                        "label": "Namespace"
+                    }
+                ]
             }
         ]
     },
-    "settings" : [
+    "settings": [
         {
-            "name" : "vulnerability_alerts",
-            "value" : "enabled"
+            "name": "vulnerability_alerts",
+            "value": "enabled"
+        }
+    ],
+    "startupWorkflows": [
+        {
+            "path": ".github/workflows/provisionResources.yml",
+            "name": "provisionResources.yml",
+            "ref": "main"
         }
     ]
 }
