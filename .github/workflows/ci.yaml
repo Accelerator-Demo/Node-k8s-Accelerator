@@ -1,7 +1,6 @@
 on:
-  push:
-    branches:
-      - master
+  workflow_dispatch:
+  
 env:
   REGISTRY_NAME: ${{ acc.REGISTRY_NAME }}
   ARC_RESOURCE_GROUP: ${{ acc.ARC_RESOURCE_GROUP }}
@@ -31,13 +30,11 @@ jobs:
     steps:
     - uses: actions/checkout@master    
       
-    - uses: azure/k8s-set-context@cluster-connect
+    - uses: azure/aks-set-context@v1
       with:
-        cluster-type: 'arc'
         creds: ${{ secrets.AZURE_CREDS }}
         cluster-name: ${{ env.ARC_CLUSTER }}
         resource-group: ${{ env.ARC_RESOURCE_GROUP }}
-        token: ${{ secrets.SA_TOKEN }}
     
     - run: |
         kubectl create namespace ${{ env.NAMESPACE }} --dry-run -o json | kubectl apply -f -
