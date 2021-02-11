@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: demo-app
-        image: demoarcacr.azurecr.io/demo-app:1.0.0
+        image: demo-app:1.0.0
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
