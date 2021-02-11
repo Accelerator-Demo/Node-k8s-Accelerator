@@ -2,10 +2,9 @@ on:
   workflow_dispatch:
   
 env:
-  REGISTRY_NAME: ${{ acc.REGISTRY_NAME }}
-  ARC_RESOURCE_GROUP: ${{ acc.ARC_RESOURCE_GROUP }}
-  ARC_CLUSTER: ${{ acc.ARC_CLUSTER }}
+  DOCKER_USERNAME: ${{ acc.DOCKER_USERNAME }}
   IMAGE_SECRET: ${{ acc.IMAGE_SECRET }}
+  IMAGE_NAME: ${{ acc.IMAGE_NAME }}
   NAMESPACE: ${{ acc.NAMESPACE }}
     
 jobs:
@@ -16,13 +15,12 @@ jobs:
     
     - uses: azure/docker-login@v1
       with:
-        login-server: ${{ env.REGISTRY_NAME }}.azurecr.io
-        username: ${{ secrets.REGISTRY_USERNAME }} 
-        password: ${{ secrets.REGISTRY_PASSWORD }}
+        username: ${{ env.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
     
     - run: |
-        docker build . -t ${{ env.REGISTRY_NAME }}.azurecr.io/demo-app:${{ github.sha }}
-        docker push ${{ env.REGISTRY_NAME }}.azurecr.io/demo-app:${{ github.sha }}   
+        docker build . -t ${{ env.IMAGE_NAME }}:${{ github.sha }}
+        docker push ${{ env.IMAGE_NAME }}:${{ github.sha }}
         
   deploy-to-dev:
     needs: build
@@ -30,29 +28,28 @@ jobs:
     steps:
     - uses: actions/checkout@master    
       
-    - uses: azure/aks-set-context@v1
+    - uses: azure/k8s-set-context@v1
       with:
-        creds: ${{ secrets.AZURE_CREDS }}
-        cluster-name: ${{ env.ARC_CLUSTER }}
-        resource-group: ${{ env.ARC_RESOURCE_GROUP }}
+        method: kubeconfig
+        kubeconfig: ${{ secrets.KUBECONFIG }}
     
     - run: |
         kubectl create namespace ${{ env.NAMESPACE }} --dry-run -o json | kubectl apply -f -
         
+    
     - uses: azure/k8s-create-secret@v1
       with:
-        container-registry-url: ${{ env.REGISTRY_NAME }}.azurecr.io
-        container-registry-username: ${{ secrets.REGISTRY_USERNAME }}
-        container-registry-password: ${{ secrets.REGISTRY_PASSWORD }}
-        secret-name: ${{ env.IMAGE_SECRET }}
         namespace: ${{ env.NAMESPACE }}
+        container-registry-username: ${{ env.DOCKER_USERNAME }}
+        container-registry-password: ${{ secrets.DOCKER_PASSWORD }}
+        secret-name: ${{ env.IMAGE_SECRET }}
     
     - uses: azure/k8s-deploy@v1.4
       with:
         manifests: |
           manifests/*.yaml
         images: |
-          ${{ env.REGISTRY_NAME }}.azurecr.io/demo-app:${{ github.sha }}
+          ${{ env.IMAGE_NAME }}:${{ github.sha }}
         imagepullsecrets: |
           ${{ env.IMAGE_SECRET }}
         namespace: ${{ env.NAMESPACE }}
