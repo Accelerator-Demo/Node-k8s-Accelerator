@@ -9,20 +9,12 @@
     "inputs": {
         "secrets": [
             {
-                "name": "REGISTRY_USERNAME",
-                "label": "Username for the docker registry"
+                "name": "KUBECONFIG",
+                "label": "Kubeconfig of the target cluster"
             },
             {
-                "name": "REGISTRY_PASSWORD",
+                "name": "DOCKER_PASSWORD",
                 "label": "Password for the docker registry"
-            },
-            {
-                "name": "AZURE_CREDS",
-                "label": "Azure Credentials"
-            },
-            {
-                "name": "SA_TOKEN",
-                "label": "SA Token"
             }
         ],
         "placeHolders": [
@@ -30,24 +22,20 @@
                 "File": ".github/workflows/ci.yaml",
                 "Variables": [
                     {
-                        "name": "REGISTRY_NAME",
-                        "label": "Docker registry name"
+                        "name": "DOCKER_USERNAME",
+                        "label": "Docker username"
                     },
                     {
-                        "name": "ARC_RESOURCE_GROUP",
-                        "label": "ARC Resource group"
-                    },
-                    {
-                        "name": "ARC_CLUSTER",
-                        "label": "ARC cluster"
+                        "name": "IMAGE_NAME",
+                        "label": "Name of the image to be built and pushed"
                     },
                     {
                         "name": "IMAGE_SECRET",
-                        "label": "Image Secret"
+                        "label": "Name of image pull secret"
                     },
                     {
                         "name": "NAMESPACE",
-                        "label": "Namespace"
+                        "label": "Kubernetes namespace"
                     }
                 ]
             }
@@ -60,10 +48,5 @@
         }
     ],
     "startupWorkflows": [
-        {
-            "path": ".github/workflows/provisionResources.yml",
-            "name": "provisionResources.yml",
-            "ref": "main"
-        }
     ]
 }
